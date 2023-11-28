@@ -142,21 +142,21 @@
 
         //change this to an audio for it to be optimized
         function playBeep() {
-            var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            var oscillator = audioCtx.createOscillator();
-            var gainNode = audioCtx.createGain();
+            // var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            // var oscillator = audioCtx.createOscillator();
+            // var gainNode = audioCtx.createGain();
 
-            oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(1000, audioCtx.currentTime); // Frequency of the beep
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
+            // oscillator.type = 'sine';
+            // oscillator.frequency.setValueAtTime(1000, audioCtx.currentTime); // Frequency of the beep
+            // oscillator.connect(gainNode);
+            // gainNode.connect(audioCtx.destination);
 
-            gainNode.gain.setValueAtTime(0.16, audioCtx.currentTime); // Adjust volume here (from 0 to 1)
+            // gainNode.gain.setValueAtTime(0.16, audioCtx.currentTime); // Adjust volume here (from 0 to 1)
 
-            oscillator.start();
-            setTimeout(function() {
-                oscillator.stop();
-            }, 50); // Adjust the duration of the beep sound
+            // oscillator.start();
+            // setTimeout(function() {
+            //     oscillator.stop();
+            // }, 50); // Adjust the duration of the beep sound
         }
         
         function playAudio() {
