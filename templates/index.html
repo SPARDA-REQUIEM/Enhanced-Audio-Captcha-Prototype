@@ -130,7 +130,7 @@
                     playAudio();
                 }
                 else {
-                    playBeep();
+                    //playBeep();
                 }
             }, 1000); 
         }
@@ -140,6 +140,7 @@
             form.submit();
         }
 
+        //change this to an audio for it to be optimized
         function playBeep() {
             var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             var oscillator = audioCtx.createOscillator();
@@ -160,7 +161,7 @@
         
         function playAudio() {
             var audio = document.getElementById("captchaAudio");
-            audio.play(); // Play the audio
+            audio.play();
         }
 
         function getRandomAudio() {
@@ -180,7 +181,6 @@
                 .catch(error => console.error('Error:', error));
         }
 
-        // Ensure audio is fetched when the page loads
         window.onload = function() {
             getRandomAudio();
         };
