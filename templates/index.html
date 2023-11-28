@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .login-box {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .login-box h2 {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .login-form input[type="text"],
+        .login-form input[type="password"],
+        .login-form input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            box-sizing: border-box;
+        }
+        .login-form input[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+        }
+        .login-form input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        .blur-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            backdrop-filter: blur(5px); /* Adjust the blur amount as needed */
+            z-index: 999; /* Set z-index below the modal */
+            display: none; /* Initially hidden */
+        }
+        .captcha-modal {
+            display: none;
+            position: fixed; /* Position it fixed within the viewport */
+            top: 50%; /* Center vertically */
+            left: 50%; /* Center horizontally */
+            transform: translate(-50%, -50%); /* Center it precisely */
+            width: 300px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            z-index: 1000; /* Set z-index to appear on top */
+        }
+        .timer-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 6px solid #ccc;
+            position: relative;
+            display: none; /* Initially hidden */
+        }
+        #timer-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            color: #007bff;
+        }
+    </style>
+    <script>
+
+        function validateInputFields() {
+            var username = document.querySelector('input[name="username"]').value;
+            var password = document.querySelector('input[name="password"]').value;
+
+            if (username.trim() == '' || password.trim() == '') {
+                alert("Username and Password is empty.")
+                toggleDisplayCaptchaForm(0);
+            }
+            else {
+                toggleDisplayCaptchaForm(1);
+            }
+        }
+
+        function toggleDisplayCaptchaForm(displayValue) {
+            if (displayValue == 0) {
+                var captchaForm = document.getElementById("captcha-form");
+                captchaForm.style.display = "none";
+                var blurBackground = document.getElementById("blurBackground");
+                blurBackground.style.display = "none";
+            }
+            else if (displayValue == 1) {
+                getRandomAudio();
+                event.preventDefault();
+                var captchaForm = document.getElementById("captcha-form");
+                captchaForm.style.display = "block";
+                timer.style.display = "block";
+                startTimer();
+            }
+            else {
+                console.log("Error.");
+            }
+        }
+
+        function startTimer() {
+            var timerText = document.getElementById("timer-text");
+            var seconds = 4;
+
+            var interval = setInterval(function() {
+                seconds--;
+                timerText.innerText = seconds;
+
+                if (seconds == 0) {
+                    clearInterval(interval);
+                    playAudio();
+                }
+                else {
+                    playBeep();
+                }
+            }, 1000); 
+        }
+
+        function submitCredentials() {
+            var form = document.querySelector('.login-form');
+            form.submit();
+        }
+
+        function playBeep() {
+            var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            var oscillator = audioCtx.createOscillator();
+            var gainNode = audioCtx.createGain();
+
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(1000, audioCtx.currentTime); // Frequency of the beep
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            gainNode.gain.setValueAtTime(0.16, audioCtx.currentTime); // Adjust volume here (from 0 to 1)
+
+            oscillator.start();
+            setTimeout(function() {
+                oscillator.stop();
+            }, 50); // Adjust the duration of the beep sound
+        }
+        
+        function playAudio() {
+            var audio = document.getElementById("captchaAudio");
+            audio.play(); // Play the audio
+        }
+
+        function getRandomAudio() {
+            fetch('/audio')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    let audioElement = document.getElementById('captchaAudio');
+                    let audioUrl = URL.createObjectURL(blob);
+                    audioElement.src = audioUrl;
+                    audioElement.load();
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        // Ensure audio is fetched when the page loads
+        window.onload = function() {
+            getRandomAudio();
+        };
+    </script>
+</head>
+<body>
+    <div class="blur-background" id="blurBackground"></div>
+    <div class="login-box">
+        <h2>Login</h2>
+        <form action="/" method="POST" class="login-form">
+            <input type="text" name="username" placeholder="Username" required>
+            <br>
+            <input type="password" name="password" placeholder="Password" required>
+            <br>
+            <input type="submit" value="Login" onclick="validateInputFields()">
+        </form>
+        {% if message %}
+            <script>alert("{{ message }}");</script>
+        {% endif %}
+        <center>
+        <div class="captcha-modal" id="captcha-form">
+            <p>An audio question will be played automatically after 3 seconds and will be repeated for two times. Listen very carefully. </p>
+            <p>Process should be: <br> 3 sec timer > play audio question > 3 sec timer > play audio question > 3 sec timer > proceed CAPTCHA form. </p>
+            <div class="timer-circle" id="timer">
+                <span id="timer-text">3</span>
+            </div>
+            <br>
+            {% if play_audio %}
+                <audio id="captchaAudio" style="display: none;">
+                    <source src="{{ url_for('get_random_audio') }}" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+            {% endif %}
+            <br><br>
+            <button onclick="toggleDisplayCaptchaForm(0)">Close</button>
+            <button onclick="submitCredentials()">Submit</button>
+
+        </div>
+        </center>
+    </div>
+</body>
+</html>
